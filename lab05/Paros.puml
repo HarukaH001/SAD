@@ -1,0 +1,188 @@
+@startuml Paros
+!theme cerulean-outline
+class Paros{
+{static}Paros()
+{static}log: Log
+{static}main(args: String[])
+- cmdLine: CommandLine
+- init(args: String[])
+- run()
+- runCommandLine()
+- runGUI()
+- showLicense()
+- checkUpdate()
+}
+
+Paros --> SSLConnector
+Paros ..> Constant: <<use>>
+Paros ..> HttpSender: <<use>>
+Paros *--> CommandLine
+Paros *--> AboutWindow
+Paros ..> Model: <<use>>
+Paros ..> Control: <<use>>
+Paros ..> View: <<use>>
+Paros *--> LicenseFrame
+
+class Constant{
++ Constant()
++ {static} getEyeCatcher(): String
++ {static} setEyeCatcher(eyeCatcher: String)
++ {static} setSP(isSP: boolean)
++ {static} isSP(): boolean
++ {static} getInstance(): Constant
++ {static} isWindows(): boolean
++ {static} isLinux(): boolean
++ {static} instance: Constant
++ {static} staticEyeCatcher: String
++ {static} staticSP: boolean
+...
+}
+
+Constant *--> FileCopier
+
+abstract class FileXML{
++ FileXML(rootElementName: String)
++ getDocument(): Document
+# getElement(base: Element, childTag: String): Element
+# getElement(tag: String): Element
+# getElement(path: String[]): Element
+# getElements(base: Element, childTag: String): Element[]
+# getElements(tagName: String): Element[]
+# getElements(path: String[]): Element[]
+- getText(element: Element): String
+# getValue(base: Element, tag: String): String
+# getValue(tag: String): String
+# getValues(tag: String): List
+# {abstract} parse()
++ readAndParseFile(fileName: String)
+# readFile(fileName: String)
++ saveFile(fileName: String)
++ setDocument(doc: Document)
+# setValue(tagName: String, value: String)
+# setValue(path: String[], value String)
+# removeElement(base: Element, tag: String)
+# removeElement(tag: String)
+# addElement(base: Element, tag: String, value: String): Element
+# addElement(base: Element, tag: String): Element
+# addElement(tag: String): Element
+# doc: Document
+# docBuilder: DocumentBuilder
+# docBuilderFactory: DocumentBuilderFactory
+}
+
+abstract class AbstractParam{
+- config: FileConfiguration
++ load(config: FileConfiguration)
++ load(fileName: String)
++ load()
++ getConfig(): FileConfiguration
+# {abstract} parse()
+}
+
+class Database{
++ Database()
++ getDatabaseServer(): DatabaseServer
+- setDatabaseServer(databaseServer: DatabaseServer)
+- setTableHistory(tableHistory TableHistory)
++ getTableHistory(): TableHistory
++ getTableSession(): TableSession
+- setTableSession(tableSession: TableSession)
++ {static} getSingleton(): Database
++ addDatabaseListener(listener: DatabaseListener)
++ removeDatabaseListener(listener: SpiderListener)
+- notifyListenerDatabaseOpen()
++ open(path: String)
++ close(compact: boolean)
++ getTableAlert(): TableAlert
++ setTableAlert(tableAlert: TableAlert)
++ getTableScan(): TableScan
++ setTableScan(tableScan: TableScan)
+
+- {static} database: Database
+- databaseServer: DatabaseServer
+- tableHistory: TableHistory
+- tableSession: TableSessios
+- tableAlert: TableAlert
+- tableScan: TableScan
+- listenerList: Vector
+}
+
+Database o--> DatabaseServer
+Database o--> TableHistory
+Database o--> TableSession
+Database o--> TableAlert
+Database o--> TableScan
+Database ..|> DatabaseListener
+Database ..|> SpiderListener
+
+class Control{
+- Control(model: Model, view View)
+- init()
++ getProxy(): Proxy
+# addExtension()
++ getMenuFileControl(): MenuFileControl
++ getMenuToolsControl(): MenuToolsControl
++ shutdown(compact: boolean)
++ {static} getSingeleton(): Control
++ {static} initSingletonWithView()
++ {static} initSingletonWithoutView()
++ runCommandLineNewSession(fileName: String)
++ runCommandLineOpenSession(fileName: String)
+
+- {static} log: Log
+- {static} control: Control
+- proxy: Proxy
+- menuFileControl: MenuFileControl
+- menuToolsControl: MenuToolsControl
+}
+
+Control --|> AbstractControl
+Control ..> Model: <<use>>
+Control ..> View: <<use>>
+Control *--> Proxy
+Control *--> MenuFileControl
+Control *--> MenuToolsControl
+Control ..> Session: <<create>>
+
+abstract class AbstractControl{
++ AbstractControl(model: Model, view: View)
++ getExtensionLoader(): ExtensionLoader
+# loadExtension()
+# {abstract} addExtension()
+# addCommonExtension()
++ shutdown(compact: boolean)
+
+# loader: ExtensionLoader
+# model: Model
+# view: View
+}
+
+AbstractControl o--> Model
+AbstractControl o--> View
+
+class Proxy{}
+
+class MenuFileControl{}
+
+class MenuToolsControl{}
+
+class ViewDelegate{}
+
+class Model{}
+
+class Session{}
+
+class optionsParam{}
+
+class HttpUtil{}
+
+class ProxyServer{}
+
+class ProxyServerSSL{}
+
+class ProxyParam{}
+
+class ProxyThread{}
+
+class View{}
+@enduml
