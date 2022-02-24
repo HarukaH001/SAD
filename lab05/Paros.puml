@@ -160,29 +160,326 @@ abstract class AbstractControl{
 AbstractControl o--> Model
 AbstractControl o--> View
 
-class Proxy{}
+class Proxy{
+- model: Model
+- proxyServer: ProxyServer
+- proxyServerSSL: ProxyServerSSL
+- reverseProxy: boolean
+- reverseProxyHost: String
++ Proxy(model: Model)
++ startServer()
++ stopServer()
++ setSerialize(serialize: boolean)
++ addProxyListener(listener: ProxyListener)
++ removeProxyListener(listener: ProxyListener)
++ isReverseProxy(): boolean
++ setReverseProxy(reverseProxy: boolean)
++ getReverseProxyHost(): String
++ setReverseProxyHost(reverseProxyHost: String)
++ setEnableCacheProcessing(enableCacheProcessing: boolean)
++ addCacheProcessingList(item: CacheProcessingItem)
+}
 
-class MenuFileControl{}
+Proxy *--> ProxyServer
+Proxy *--> ProxyServerSSL
+Proxy o--> Model
+Proxy ..|> ProxyListener
+Proxy ..|> CacheProcessingItem
 
-class MenuToolsControl{}
+class MenuFileControl{
+- {static} log: Log
+- view: View
+- model: Model
+- control: Control
+- waitMessageDialog: WaitMessageDialog
++ MenuFileControl(model: Model, view: View, control: Control)
++ exit()
++ newSession(isPromptNewSession: boolean)
++ openSession()
++ saveSession()
++ saveAsSession()
++ properties()
++ sessionOpened(file: File, e: Exception)
++ sessionSaved(e: Exception)
+}
 
-class ViewDelegate{}
+MenuFileControl ..|> SessionListener
+MenuFileControl o--> Model
+MenuFileControl o--> View
+MenuFileControl o--> Control
+MenuFileControl ..> Session: <<create>>
 
-class Model{}
+class MenuToolsControl{
+- view: View
+- model: Model
+- control: Control
++ MenuToolsControl()
++ MenuToolsControl(model: Model, view: View, control: Control)
++ options()
+}
 
-class Session{}
+MenuToolsControl o--> Model
+MenuToolsControl o--> View
+MenuToolsControl o--> Control
 
-class optionsParam{}
+interface ViewDelegate{
++ getMainFrame(): MainFrame
++ getSiteTreePanel(): SiteMapPanel
++ getOutputPanel(): OutputPanel
++ showConfirmDialog(msg: String): int
++ showYesNoCancelDialog(msg: String): int
++ showWarningDialog(msg: String)
++ showMessageDialog(msg: String)
++ getWaitMessageDialog(msg: String): WaitMessageDialog
++ getPopupMenu(): MainPopupMenu
++ setStatus(msg: String)
++ getRequestPanel(): HttpPanel
++ getResponsePanel(): HttpPanel
+}
 
-class HttpUtil{}
+class Model{
+- {static} model: Model
+- session: Session
+- optionsParam: OptionsParam
+- db: Database
+- currentDBNameUntitled: String
++ Model()
++ getOptionsParam(): OptionsParam
++ setOptionsParam(param: OptionsParam)
++ getSession(): Session
++ setSession(paramSession: Session)
++ init()
++ {static} getSingleton(): Model
++ getDb(): Database
++ moveSessionDb(destFile: String)
++ copySessionDb(currentFile: String, destFile: String)
++ createAndOpenUntitledDb()
+}
 
-class ProxyServer{}
+Model *--> Session
+Model *--> OptionsParam
+Model ..> Database: <<use>>
+Model ..> FileCopier: <<use>>
 
-class ProxyServerSSL{}
+class Session{
+- model: Model
+- fileName: String
+- siteTree: SiteMap
++ Session(model: Model)
++ discard()
++ getSessionDesc(): String
++ getSessionId(): long
++ getSessionName(): String
++ getSiteTree(): SiteMap
++ isNewState(): boolean
++ open(file: File, callback: SessionListener)
++ open(fileName: String)
+# parse()
++ save(fileName: String, callback: SessionListener)
++ save(fileName: String)
++ setSessionDesc(sessionDesc: String)
++ setSessionId(sessionId: long)
++ setSessionName(name: String)
++ getFileName(): String
+- saveSiteTree(node: SiteNode)
+- saveNodeMsg(msg: HttpMessage)
++ getSessionFolder(): String
+}
 
-class ProxyParam{}
+Session --|> FileXML
+Session o--> Model
+Session o--> SiteMap
+Session ..|> SessionListener
+Session ..|> SiteNode
+Session ..|> HttpMessage
 
-class ProxyThread{}
+class OptionsParam{
+- proxyParam: ProxyParam
+- connectionParam: ConnectionParam
+- viewParam: OptionsParamView
+- certificateParam: OptionsParamCertificate
++ getConnectionParam(): ConnectionParam
++ getProxyParam: ProxyParam
++ setProxyParam(proxyParam: ProxyParam)
++ OptionsParam()
++ setConnectionParam(connectionParam: ConnectionParam)
++ setViewParam(viewParam: OptionsParamView)
++ getViewParam(): OptionsParamView
++ setCertificateParam(certificateParam: OptionsParamCertificate)
++ getCertificateParam(): OptionsParamCertificate
++ addParamSet(paramSet: AbstractParam)
++ getParamSet(className: Class): AbstractParam
++ getConfig(): FileConfiguration
+# parse()
++ isGUI(): boolean
++ setGUI(gui: boolean)
++ getUserDirectory(): File
++ setUserDirectory(currentDirectory: File)
+}
 
-class View{}
+OptionsParam --|> AbstractParam
+OptionsParam *--> ProxyParam
+OptionsParam *--> ConnectionParam
+OptionsParam *--> OptionsParamView
+OptionsParam *--> OptionsParamCertificate
+
+class HttpUtil{
++ {static} encodeURI(uri: String): String
++ {static} sleep(ms: int)
++ {static} closeServerSocket(socket: ServerSocket)
++ {static} closeSocket(socket: Socket)
++ {static} closeInputStream(in: InputStream)
++ {static} closeOutputStream(out: OutputStream)
+}
+
+class ProxyServer{
+# proxySocket: ServerSocket
+# proxyParam: ProxyParam
+# connectionParam: ConnectionParam
++ isEnableCacheProcessing(): boolean
++ setEnableCacheProcessing(enableCacheProcessing: boolean)
++ isSerialize(): boolean
++ ProxyServer()
++ setProxyParam(param: ProxyParam)
++ getProxyParam(): ProxyParam
++ setConnectionParam(connection: ConnectionParam)
++ getConnectionParam(): ConnectionParam
++ startServer(ip: String, port: int, isDynamicPort: boolean): int
++ stopServer(): boolean
++ run()
+# createServerSocket(ip: String, port: int): ServerSocket
+# createProxyProcess(clientSocket: Socket): ProxyThread
+# writeOutput(s: String)
++ addProxyListener(listener: ProxyListener)
++ removeProxyListener(listener: ProxyListener)
+getListenerList(): List
++ isAnyProxyThreadRunning(): boolean
++ setSerialize(serialize: boolean)
++ addCacheProcessingList(item: CacheProcessingItem)
+getCacheProcessingList(): Vector
+}
+
+ProxyServer ..|> Runnable
+ProxyServer *--> ProxyParam
+ProxyServer *--> ConnectionParam
+ProxyServer ..> HttpUtil: <<use>>
+ProxyServer ..|> ProxyListener
+ProxyServerSSL ..|> ProxyThread
+
+class ProxyServerSSL{
+- {static} ssl: SSLConnector
++ ProxyServerSSL()
+# createServerSocket(ip: String, port: int): ServerSocket
+# createProxyProcess(clientSocket: Socket): ProxyThread
+}
+
+ProxyServerSSL --|> ProxyServer
+ProxyServerSSL ..|> SSLConnector
+ProxyServerSSL ..> HttpSender: <<use>>
+ProxyServerSSL ..|> ProxyThreadSSL
+
+class ProxyParam{
+- proxyIp: String
+- proxyPort: int
+- proxySSLPort: int
+...
++ ProxyParam()
+# parse()
++ getProxyIp(): String
++ setProxyIp(proxyIp: String)
++ getProxyPort(): int
++ setProxyPort(proxyPort: int)
++ getProxySSLPort(): int
++ getReverseProxyIp(): String
++ setReverseProxyIp(reverseProxyIp: String)
++ getReverseProxyHttpPort(): int
++ setREverseProxyHttpPort(reverseProxyHttpPort: int)
++ getReverseProxyHttpsPort(): int
++ setReverseProxyHttpsPort(reverseProxyHttpsPort: int)
++ isUseReverseProxy(): boolean
++ setUseReverseProxy(isUse: boolean)
+}
+
+ProxyParam --> AbstractParam
+
+class ProxyThread{
+- {static} log:  Log
+# parentServer: ProxyServer
+# proxyParam: ProxyParam
+# connectionParam: ConnectionParam
+# httpIn: HttpInputStream
+# httpOut: HttpOutputStream
+# originProcess: ProxyThread
+- httpSender: HttpSender
+...
+ProxyThread(server: ProxyServer, socket: Socket)
++ start()
+- beginSSL()
++ run()
+# ProcessHttp(requestHeader: HttpRequestHeader, isSecure: boolean)
+- isConnectionClose(msg: HttpMessage): boolean
+# disconnect()
+- notifyListenerRequestSend(httpMessage: HttpMessage)
+- notifyListenerResponseReceive(httpMessage: HttpMessage)
+- isRecursive(header: HttpRequestHeader)
+- modifyHeader(msg: HttpMessage)
+# getHttpSender(): HttpSender
+{static} isAnyProxyThreadRunning(): boolean
+# isProcessCache(msg: HttpMessage): boolean
+}
+
+ProxyThread ..|> Runnable
+ProxyThread o--> ProxyServer
+ProxyThread o--> ProxyParam
+ProxyThread o--> ConnectionParam
+ProxyThread *--> HttpInputStream
+ProxyThread *--> HttpOutputStream
+ProxyThread --> HttpSender: <<use>>
+ProxyThread ..|> HttpRequestHeader
+ProxyThread ..|> HttpBody
+ProxyThread ..|> HttpMessage
+ProxyThread ..> Model: <<use>>
+ProxyThread ..|> RecordHistory
+
+class View{
+- {static} view: View
+- sessionDialog: SessionDialog
+- optionsDialog: OptionsDialog
+- mainFrame: MainFrame
+- requestPanel: HttpPanel
+- responsePanel: HttpPanel
+- siteMapPanel: SiteMapPanel
+- outputPanel: OutputPanel
++ getMainFrame(): MainFrame
++ init()
++ postInit()
++ showConfirmDialog(msg: String): int
++ showYesNoCancelDialog(msg: String): int
++ showWarningDialog(msg: String)
++ showMessageDialog(msg: String)
++ {static} getSingleton(): View
++ getSiteTreePanel(): SiteMapPanel
++ getOutputPanel(): OutputPanel
++ getRequestPanel(): HttpPanel
++ getResponsePanel(): HttpPanel
++ getSessionDialog(title: String): SessionDialog
++ OptionsDialog(ttitle: String)
++ getOptionsDialog(title: String): OptionsDialog
++ getWorkBench(): WorkbenchPanel
++ setStatus(msg: String)
++ getPopupMenu(): MainPopupMenu
++ getPopupList(): Vector
++ getWaitMessageDialog(s: String): WaitMessageDialog
+}
+
+View ..|> ViewDelegate
+View *--> MainFrame
+View *--> SiteMapPanel
+View *--> OutputPanel
+View *--> HttpPanel
+View *--> SessionDialog
+View *--> OptionsDialog
+View ..|> WorkbenchPanel
+View *--> MainPopupMenu
+View ..|> WaitMessageDialog
 @enduml
