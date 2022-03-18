@@ -5,14 +5,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-public class BookPublisher extends Book {
+public class BookPublisher {
 
-    public BookPublisher(String title, List<String> pages) {
-        super(title, pages);
-    }
-
-    public void printToFile() {
-        Book book = this;
+    public static void printToFile(Book book) {
         boolean isEven = false;
         String previousPage = "";
         try {
@@ -34,7 +29,7 @@ public class BookPublisher extends Book {
     }
 
     public static void main(String[] args) {
-        BookPublisher book = new BookPublisher("Tyland", List.of("I", "moved", "here", "recently", "too"));
-        book.printToFile();
+        Book book = new Book("Tyland", List.of("I", "moved", "here", "recently", "too"));
+        BookPublisher.printToFile(book);
     }
 }
