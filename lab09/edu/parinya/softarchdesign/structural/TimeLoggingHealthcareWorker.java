@@ -6,6 +6,7 @@ public class TimeLoggingHealthcareWorker extends HealthcareWorkerDecorator {
 
     TimeLoggingHealthcareWorker(HealthcareWorker worker) {
         super(worker);
+        System.out.printf("Decorate %s with TimeLogging.\n", super.getName());
     }
 
     @Override
