@@ -1,0 +1,53 @@
+class Person {
+    - name: String
+    - age: Integer
+    - height: Integer
+    - weight: Integer
+
+    + getName(): String
+    + setName(name: String): void
+    + getAge(): Integer
+    + setAge(age: Integer): void
+    + getHeight(): Integer
+    + setHeight(heigh : Integer): void
+    + getWeight(): Integer
+    + setWeight(weight : Integer): void
+}
+
+class People {
+    - members: List<Person>
+    - sortStrategy: SortStrategy
+
+    + People()
+    + setSortStrategy(sortStrategy: SortStrategy): void
+    + addMember(p: Person) : void
+    + print(out: PrintStream): void
+}
+
+interface SortStrategy {
+    customSort(people: List<Person>)
+}
+
+class NameSortStrategy {
+    customSort(people: List<Person>)
+}
+
+class AgeSortStrategy {
+    customSort(people: List<Person>)
+}
+
+class HeightSortStrategy {
+    customSort(people: List<Person>)
+}
+
+class WeightSortStrategy {
+    customSort(people: List<Person>)
+}
+
+NameSortStrategy ..|> SortStrategy
+AgeSortStrategy ..|> SortStrategy
+HeightSortStrategy ..|> SortStrategy
+WeightSortStrategy ..|> SortStrategy
+
+People "1" o--> "*" Person 
+People  o--> SortStrategy
